@@ -1,28 +1,27 @@
-﻿global using Monocle;
+﻿global using Celeste.Mod.Entities;
 global using Microsoft.Xna.Framework;
-global using Celeste.Mod.Entities;
+global using Monocle;
 global using static Celeste.Mod.FemtoHelper.Utils;
-
-using System;
-using MonoMod.Cil;
-using Mono.Cecil.Cil;
-using System.Collections;
-using Celeste.Mod.FemtoHelper.Effects;
-using Microsoft.Xna.Framework.Graphics;
-using Celeste.Mod.FemtoHelper.Entities;
-using MonoMod.Utils;
-using MonoMod.ModInterop;
+using Celeste.Mod.FemtoHelper.AuspiciousInterop;
 using Celeste.Mod.FemtoHelper.Code.Effects;
-using System.Linq;
-using Celeste.Mod.FemtoHelper.Wipes;
 using Celeste.Mod.FemtoHelper.Code.Entities;
+using Celeste.Mod.FemtoHelper.CustomFancyText;
+using Celeste.Mod.FemtoHelper.Effects;
+using Celeste.Mod.FemtoHelper.Entities;
+using Celeste.Mod.FemtoHelper.PlutoniumText;
+using Celeste.Mod.FemtoHelper.Wipes;
+using Microsoft.Xna.Framework.Graphics;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.ModInterop;
 using MonoMod.RuntimeDetour;
+using MonoMod.Utils;
+using System;
+using System.Collections;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using static Celeste.Mod.FemtoHelper.Entities.SparkRefill;
-using System.Diagnostics.CodeAnalysis;
-using Celeste.Mod.FemtoHelper.CustomFancyText;
-using Celeste.Mod.FemtoHelper.PlutoniumText;
-using Celeste.Mod.FemtoHelper.AuspiciousInterop;
 
 namespace Celeste.Mod.FemtoHelper;
 
@@ -586,6 +585,8 @@ public class FemtoModule : EverestModule
         PlutoniumTextComponent.LoadContent();
         PlutoniumTextRenderer.LoadContent();
         ColorGradeNoPremultiply.LoadContent();
+
+        LifecycleMethods.OnLoadContent(firstLoad);
     }
 
     // Unload the entirety of your mod's content. Free up any native resources.

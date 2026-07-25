@@ -111,6 +111,22 @@ public class WaterSprite : GraphicsComponent
         Engine.Graphics.GraphicsDevice.SetRenderTarget(null);
     }
 
+    public override void Removed(Entity entity)
+    {
+        base.Removed(entity);
+        Buffer.Dispose();
+    }
+    public override void EntityRemoved(Scene scene)
+    {
+        base.EntityRemoved(scene);
+        Buffer.Dispose();
+    }
+    public override void SceneEnd(Scene scene)
+    {
+        base.SceneEnd(scene);
+        Buffer.Dispose();
+    }
+
     public override void Render()
     {
         base.Render();
