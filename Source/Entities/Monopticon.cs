@@ -641,10 +641,12 @@ public class Monopticon : Lookout
                     else
                     {
                         nodePercent = 1f;
+                        /*
                         if (summit)
                         {
                             break;
                         }
+                        */
                     }
                 }
                 float num2 = 0f;
@@ -680,7 +682,7 @@ public class Monopticon : Lookout
         {
             player.StateMachine.State = 0;
         }
-
+        /*
         bool atSummitTop = summit && node >= nodes.Count - 1 && nodePercent >= 0.95f;
         if (atSummitTop)
         {
@@ -696,11 +698,12 @@ public class Monopticon : Lookout
                 yield return null;
             }
         }
+        */
         if ((camStart - level.Camera.Position).Length() > 600f)
         {
             Vector2 was = level.Camera.Position;
             Vector2 direction = (was - camStart).SafeNormalize();
-            float approach2 = (atSummitTop ? 1f : 0.5f);
+            float approach2 = 0.5f;// (atSummitTop ? 1f : 0.5f);
             new FadeWipe(Scene, wipeIn: false).Duration = approach2;
             for (float duration2 = 0f; duration2 < 1f; duration2 += Engine.DeltaTime / approach2)
             {
@@ -712,7 +715,7 @@ public class Monopticon : Lookout
         }
         Audio.SetMusicParam("escape", 0f);
         level.ScreenPadding = 0f;
-        level.ZoomSnap(Vector2.Zero, 1f);
+        //level.ZoomSnap(Vector2.Zero, 1f);
 
         yield return null;
     }
