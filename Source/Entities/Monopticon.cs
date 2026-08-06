@@ -60,6 +60,7 @@ public class Monopticon : Lookout
     public bool CanDashCoroutine;
 
     private readonly bool strictStateReset;
+    private readonly bool useCoyoteFrames;
 
     private readonly float binoAccel;
     private readonly float binoMaxSpeed;
@@ -110,6 +111,7 @@ public class Monopticon : Lookout
         CloseFrames = data.Float("closeFrames", 20f);
         CooldownFrames = data.Float("cooldownFrames", 6f);
         strictStateReset = data.Bool("strictStateReset", false);
+        useCoyoteFrames = data.Bool("useCoyoteFrames", false);
 
         binoAccel = data.Float("binoAcceleration", 800f);
         binoMaxSpeed = data.Float("binoMaxSpeed", 240f);
@@ -118,6 +120,7 @@ public class Monopticon : Lookout
     public static void Load()
     {
         On.Celeste.Lookout.Interact += MonopticonInteractHook;
+        On.Celeste.TalkComponent.Update += TalkComponent_Update;
         On.Celeste.Player.Jump += Player_Jump;
         On.Celeste.Player.SuperJump += Player_SuperJump;
         On.Celeste.Player.DashBegin += Player_DashBegin;
@@ -181,6 +184,7 @@ public class Monopticon : Lookout
     public static void Unload()
     {
         On.Celeste.Lookout.Interact -= MonopticonInteractHook;
+        On.Celeste.TalkComponent.Update -= TalkComponent_Update;
         On.Celeste.Player.Jump -= Player_Jump;
         On.Celeste.Player.SuperJump -= Player_SuperJump;
         On.Celeste.Player.DashBegin -= Player_DashBegin;
@@ -334,6 +338,49 @@ public class Monopticon : Lookout
 
     }
 
+    public static void TalkComponent_Update(On.Celeste.TalkComponent.orig_Update orig, TalkComponent self)
+    {
+        Monopticon mono = self.Entity as Monopticon;
+        if (mono == null)
+        {
+            orig(self);
+            return;
+        }
+        
+        if (self.UI == null)
+            self.Entity.Scene.Add((Entity) (self.UI = new TalkComponent.TalkComponentUI(self)));
+        Player entity = self.Scene.Tracker.GetEntity<Player>();
+        bool flag = (double) self.disableDelay < 0.05000000074505806 &&
+                    entity != null &&
+                    entity.CollideRect(new Rectangle((int) ((double) self.Entity.X + (double) self.Bounds.X), (int) ((double) self.Entity.Y + (double) self.Bounds.Y), self.Bounds.Width, self.Bounds.Height)) &&
+                    (entity.OnGround() || (mono.useCoyoteFrames && entity.jumpGraceTimer > 0)) && 
+                    (double) entity.Bottom < (double) self.Entity.Y + (double) self.Bounds.Bottom + 4.0 && 
+                    entity.StateMachine.State == 0 &&
+                    (!self.PlayerMustBeFacing || (double) Math.Abs(entity.X - self.Entity.X) <= 16.0 || entity.Facing == (Facings) Math.Sign(self.Entity.X - entity.X)) &&
+                    (TalkComponent.PlayerOver == null || TalkComponent.PlayerOver == self);
+        if (flag)
+            self.hoverTimer += Engine.DeltaTime;
+        else if (self.UI.Display)
+            self.hoverTimer = 0.0f;
+        if (TalkComponent.PlayerOver == self && !flag)
+            TalkComponent.PlayerOver = (TalkComponent) null;
+        else if (flag)
+            TalkComponent.PlayerOver = self;
+        if (flag && (double) self.cooldown <= 0.0 && (int) entity.StateMachine == 0 && Input.Talk.Pressed && self.Enabled && !self.Scene.Paused)
+        {
+            self.cooldown = 0.1f;
+            if (self.OnTalk != null)
+                self.OnTalk(entity);
+        }
+        if (flag && (int) entity.StateMachine == 0)
+            self.cooldown -= Engine.DeltaTime;
+        if (!self.Enabled)
+            self.disableDelay += Engine.DeltaTime;
+        else
+            self.disableDelay = 0.0f;
+        self.UI.Highlighted = flag && (double) self.hoverTimer > 0.10000000149011612;
+    }
+
     public override void Added(Scene scene)
     {
         base.Added(scene);
@@ -437,7 +484,7 @@ public class Monopticon : Lookout
         }
         player.StateMachine.State = 11;
         //yield return player.DummyWalkToExact((int)base.X, walkBackwards: false, 1f, cancelOnFall: true);
-        if (player.Dead || !player.OnGround())
+        if (player.Dead || !(player.OnGround() || (useCoyoteFrames && player.jumpGraceTimer > 0)))
         {
             if (!player.Dead)
             {
